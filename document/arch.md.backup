@@ -1,0 +1,63 @@
+# Plano de Projeto: Simulação e Ingestão de Dados
+
+Este plano cobre a primeira fase da sua pipeline MLOps: gerar dados simulados de sensores industriais e ingeri-los no **Data Lake (S3)** de forma segura e econômica, utilizando a arquitetura Free Tier (**IoT Core → Lambda → S3**).
+
+---
+
+## I. Arquitetura de Referência (Substituindo o Kinesis)
+
+| Camada | Serviço AWS | Função |
+| :--- | :--- | :--- |
+| **Geração** | AWS IoT Device Simulator | Ferramenta para gerar *payloads* em massa para o IoT Core. |
+| **Entrada** | AWS IoT Core | *Broker* de mensagens que recebe dados e os encaminha via Regra. |
+| **Processamento** | AWS Lambda | Função *serverless* para receber os dados do IoT e salvá-los em **lotes (*batch*)** no S3. |
+| **Armazenamento** | Amazon S3 | **Data Lake** para armazenar os dados brutos e *datasets* processados. |
+
+---
+
+## II. Etapas do Projeto e Tarefas
+
+### Etapa 1: Provisionamento da Infraestrutura de Rede e Storage (IaC)
+
+| Tarefa | Serviço/Ferramenta | Descrição |
+| :--- | :--- | :--- |
+| 1.1 | **Terraform** | Inicializar o projeto Terraform e a VPC. |
+| 1.2 | **Terraform/VPC** | Criar a **VPC**, Subnets Públicas, Subnets Privadas, IGW e Route Tables. |
+| 1.3 | **Terraform/S3** | Criar o **S3 Data Lake** com criptografia padrão (SSE-S3). |
+| 1.4 | **Terraform/IAM** | Criar o **IAM Role** para o Lambda (incluindo permissões para S3 e CloudWatch Logs). |
+| 1.5 | **Terraform/SG** | Criar o **Security Group** para o Lambda, permitindo tráfego de saída (outbound). |
+
+### Etapa 2: Desenvolvimento do Código Lambda de Ingestão
+
+| Tarefa | Serviço/Ferramenta | Descrição |
+| :--- | :--- | :--- |
+| 2.1 | **Python/Boto3** | Desenvolver o *script* Lambda (`ingestion_processor.py`). Deve receber eventos do IoT, adicionar metadados (timestamp de ingestão) e criar um *buffer*. | 
+| 2.2 | **Python/Boto3** | Implementar a lógica de escrita no S3: salvar os dados em **lote** no S3, utilizando a estrutura de pastas baseada em data (**ex:** `raw/year=YYYY/month=MM/`). |
+| 2.3 | **Terraform/Lambda** | Empacotar o código Lambda (`.zip`) e provisionar a função, associando-a ao **IAM Role** e às **Subnets Privadas** (VPC Config). |
+
+### Etapa 3: Configuração da Ingestão de Streaming (IoT Core)
+
+| Tarefa | Serviço/Ferramenta | Descrição |
+| :--- | :--- | :--- |
+| 3.1 | **Terraform/IAM** | Criar o **IAM Role** para a Regra do IoT, concedendo permissão **mínima** para invocar a função Lambda (`lambda:InvokeFunction`). |
+| 3.2 | **Terraform/IoT** | Criar a **IoT Rule** com a *query* SQL: `SELECT * FROM 'sensores/fabrica/dados'`. |
+| 3.3 | **Terraform/Lambda** | Adicionar a permissão (`aws_lambda_permission`) para que o **IoT Core** possa invocar o Lambda, definindo o `source_arn` da Regra do IoT. |
+
+### Etapa 4: Teste e Validação
+
+| Tarefa | Serviço/Ferramenta | Descrição |
+| :--- | :--- | :--- |
+| 4.1 | **IoT Device Simulator** | Configurar o simulador para enviar um *payload* JSON de teste para o tópico MQTT (`sensores/fabrica/dados`). |
+| 4.2 | **CloudWatch Logs** | Monitorar os *logs* do Lambda para verificar a execução e diagnosticar erros de permissão ou falha na escrita do S3. |
+| 4.3 | **Amazon S3** | Validar se os arquivos estão sendo criados no *bucket* do S3 com a estrutura de pastas correta e se o conteúdo JSON está intacto. |
+
+---
+
+## III. Boas Práticas e Segurança (Checklist)
+
+| Prática | Detalhe de Implementação | Justificativa |
+| :--- | :--- | :--- |
+| **Princípio do Privilégio Mínimo** | O **IAM Role** do Lambda só tem `s3:PutObject` e permissões de log. | Minimiza o risco de segurança em caso de comprometimento da função. |
+| **Isolamento de Rede (VPC)** | O **AWS Lambda** é configurado nas **Subnets Privadas** da VPC. | Garante que o tráfego da função permaneça privado e controlado pela rede da AWS. |
+| **Criptografia em Repouso** | S3 Data Lake com **SSE-S3** ativada. | Proteção básica e automática dos dados armazenados (obrigatório em ambiente de produção). |
+| **VPC Endpoints** | Recomendado para o S3 e DynamoDB (futuro) para permitir o acesso do Lambda sem sair da rede privada. | Evita a necessidade de NAT Gateway (economizando custos) e aumenta a segurança. |
