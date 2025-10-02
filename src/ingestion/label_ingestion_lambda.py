@@ -18,7 +18,6 @@ def lambda_handler(event, context):
 
     try:
         
-        # 3. Inserção no DynamoDB
         print(f"Inserindo item na tabela {DYNAMODB_TABLE_NAME}: {event}")
         
         response = table.put_item(

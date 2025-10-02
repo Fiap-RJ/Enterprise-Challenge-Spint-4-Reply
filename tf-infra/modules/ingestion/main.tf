@@ -46,7 +46,6 @@ resource "aws_s3_bucket_public_access_block" "data_lake" {
 
 # --- 2. DYNAMODB TABLES ---
 
-# Tabela para estado de degradação das máquinas (usado pelo Simulator)
 resource "aws_dynamodb_table" "machine_state" {
   name           = var.machine_state_table_name
   billing_mode   = "PAY_PER_REQUEST"
@@ -63,7 +62,6 @@ resource "aws_dynamodb_table" "machine_state" {
   })
 }
 
-# Tabela para histórico de labels (usado pelo Label Ingestion)
 resource "aws_dynamodb_table" "label_history" {
   name           = var.label_history_table_name
   billing_mode   = "PAY_PER_REQUEST"
@@ -88,7 +86,6 @@ resource "aws_dynamodb_table" "label_history" {
 
 # --- 3. IAM ROLES E POLICIES ---
 
-# Role para Lambda Simulator
 resource "aws_iam_role" "simulator_role" {
   name = "${var.project_name}-simulator-role"
 
@@ -110,7 +107,6 @@ resource "aws_iam_role" "simulator_role" {
   })
 }
 
-# Policy para Lambda Simulator (IoT Core + DynamoDB para estado das máquinas)
 resource "aws_iam_role_policy" "simulator_policy" {
   name = "${var.project_name}-simulator-policy"
   role = aws_iam_role.simulator_role.id
@@ -139,13 +135,11 @@ resource "aws_iam_role_policy" "simulator_policy" {
   })
 }
 
-# Anexa política básica de logs para Lambda Simulator
 resource "aws_iam_role_policy_attachment" "simulator_logs" {
   role       = aws_iam_role.simulator_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# Role para Lambda Ingestion (telemetria)
 resource "aws_iam_role" "ingestion_role" {
   name = "${var.project_name}-ingestion-role"
 
@@ -167,7 +161,6 @@ resource "aws_iam_role" "ingestion_role" {
   })
 }
 
-# Policy para Lambda Ingestion (apenas S3 para salvar dados brutos)
 resource "aws_iam_role_policy" "ingestion_policy" {
   name = "${var.project_name}-ingestion-policy"
   role = aws_iam_role.ingestion_role.id
@@ -186,13 +179,11 @@ resource "aws_iam_role_policy" "ingestion_policy" {
   })
 }
 
-# Anexa política básica de logs para Lambda Ingestion
 resource "aws_iam_role_policy_attachment" "ingestion_logs" {
   role       = aws_iam_role.ingestion_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# Role para Lambda Label Ingestion 
 resource "aws_iam_role" "label_ingestion_role" {
   name = "${var.project_name}-label-ingestion-role"
 
@@ -214,7 +205,6 @@ resource "aws_iam_role" "label_ingestion_role" {
   })
 }
 
-# Policy para Lambda Label Ingestion 
 resource "aws_iam_role_policy" "label_ingestion_policy" {
   name = "${var.project_name}-label-ingestion-policy"
   role = aws_iam_role.label_ingestion_role.id
@@ -233,7 +223,6 @@ resource "aws_iam_role_policy" "label_ingestion_policy" {
   })
 }
 
-# Anexa política básica de logs para Lambda Label Ingestion
 resource "aws_iam_role_policy_attachment" "label_ingestion_logs" {
   role       = aws_iam_role.label_ingestion_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -241,25 +230,21 @@ resource "aws_iam_role_policy_attachment" "label_ingestion_logs" {
 
 # --- 4. LAMBDA FUNCTIONS ---
 
-# Data sources para região e conta
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
-# Empacota o código do Simulator
 data "archive_file" "simulator_zip" {
   type        = "zip"
   source_file = "${path.root}/../src/ingestion/sensor_simulator.py"
   output_path = "${path.module}/lambda_artifacts/simulator.zip"
 }
 
-# Lambda Simulator (com código real)
 resource "aws_lambda_function" "simulator" {
   function_name = "${var.project_name}-simulator"
   role          = aws_iam_role.simulator_role.arn
   handler       = "sensor_simulator.lambda_handler"
   runtime       = "python3.11"
   
-  # Usar arquivo empacotado do código real
   filename         = data.archive_file.simulator_zip.output_path
   source_code_hash = data.archive_file.simulator_zip.output_base64sha256
 
@@ -283,21 +268,18 @@ resource "aws_lambda_function" "simulator" {
   })
 }
 
-# Empacota o código do Ingestion Processor
 data "archive_file" "ingestion_zip" {
   type        = "zip"
   source_file = "${path.root}/../src/ingestion/ingestion_processor.py"
   output_path = "${path.module}/lambda_artifacts/ingestion.zip"
 }
 
-# Lambda Ingestion Processor (telemetria) - com código real
 resource "aws_lambda_function" "ingestion" {
   function_name = "${var.project_name}-ingestion"
   role          = aws_iam_role.ingestion_role.arn
   handler       = "ingestion_processor.handler"
   runtime       = "python3.11"
   
-  # Usar arquivo empacotado do código real
   filename         = data.archive_file.ingestion_zip.output_path
   source_code_hash = data.archive_file.ingestion_zip.output_base64sha256
 
@@ -321,14 +303,12 @@ resource "aws_lambda_function" "ingestion" {
   })
 }
 
-# Empacota o código do Label Ingestion
 data "archive_file" "label_ingestion_zip" {
   type        = "zip"
   source_file = "${path.root}/../src/ingestion/label_ingestion_lambda.py"
   output_path = "${path.module}/lambda_artifacts/label_ingestion.zip"
 }
 
-# Lambda Label Ingestion (eventos de falha) - com código real
 resource "aws_lambda_function" "label_ingestion" {
   function_name = "${var.project_name}-label-ingestion"
   role          = aws_iam_role.label_ingestion_role.arn
@@ -359,7 +339,6 @@ resource "aws_lambda_function" "label_ingestion" {
 
 # --- 5. EVENTBRIDGE SCHEDULER ---
 
-# EventBridge Rule para agendamento do Simulator (1 minuto por padrão)
 resource "aws_cloudwatch_event_rule" "simulator_schedule" {
   name                = "${var.project_name}-simulator-schedule"
   description         = "Trigger sensor simulator every minute"
@@ -370,14 +349,12 @@ resource "aws_cloudwatch_event_rule" "simulator_schedule" {
   })
 }
 
-# EventBridge Target para invocar o Lambda Simulator
 resource "aws_cloudwatch_event_target" "simulator_target" {
   rule      = aws_cloudwatch_event_rule.simulator_schedule.name
   target_id = "SimulatorLambdaTarget"
   arn       = aws_lambda_function.simulator.arn
 }
 
-# Permissão para EventBridge invocar o Lambda Simulator
 resource "aws_lambda_permission" "allow_eventbridge_simulator" {
   statement_id  = "AllowExecutionFromEventBridge"
   action        = "lambda:InvokeFunction"
@@ -388,7 +365,6 @@ resource "aws_lambda_permission" "allow_eventbridge_simulator" {
 
 # --- 6. IOT CORE RULES (SEPARADAS POR TIPO) ---
 
-# Permissão para IoT Core invocar a Lambda Ingestion (telemetria)
 resource "aws_lambda_permission" "allow_iot_telemetry_invoke" {
   statement_id  = "AllowExecutionFromIoTTelemetry"
   action        = "lambda:InvokeFunction"
@@ -397,13 +373,11 @@ resource "aws_lambda_permission" "allow_iot_telemetry_invoke" {
   source_arn    = aws_iot_topic_rule.telemetry_ingestion_rule.arn
 }
 
-# Regra do IoT Core para capturar APENAS tópicos de telemetria
 resource "aws_iot_topic_rule" "telemetry_ingestion_rule" {
   name        = "${var.project_name}_telemetry_ingestion_rule"
   description = "Rule to invoke Lambda from MQTT telemetry topics (temperature, vibration)"
   enabled     = true
 
-  # Captura APENAS tópicos de telemetria com tópico incluído
   sql         = "SELECT *, topic() as mqtt_topic FROM 'industrial/machine/+/+'"
   sql_version = "2016-03-23"
 
@@ -416,7 +390,6 @@ resource "aws_iot_topic_rule" "telemetry_ingestion_rule" {
   })
 }
 
-# Permissão para IoT Core invocar a Lambda Label Ingestion
 resource "aws_lambda_permission" "allow_iot_failure_invoke" {
   statement_id  = "AllowExecutionFromIoTFailure"
   action        = "lambda:InvokeFunction"
@@ -425,13 +398,11 @@ resource "aws_lambda_permission" "allow_iot_failure_invoke" {
   source_arn    = aws_iot_topic_rule.failure_ingestion_rule.arn
 }
 
-# Regra do IoT Core para capturar APENAS eventos de falha
 resource "aws_iot_topic_rule" "failure_ingestion_rule" {
   name        = "${var.project_name}_failure_ingestion_rule"
   description = "Rule to invoke Lambda from MQTT failure event topics"
   enabled     = true
 
-  # Captura APENAS eventos de falha
   sql         = "SELECT * FROM 'industrial/machine/+/event/failure'"
   sql_version = "2016-03-23"
 

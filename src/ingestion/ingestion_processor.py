@@ -71,10 +71,8 @@ def save_telemetry_to_s3(payload, s3_key):
         bool: True se salvou com sucesso, False caso contrário
     """
     try:
-        # Serializa o payload como JSON Lines (uma linha)
         jsonl_content = json.dumps(payload, separators=(',', ':'))
         
-        # Salva no S3
         s3_client.put_object(
             Bucket=S3_BUCKET_NAME,
             Key=s3_key,
@@ -119,10 +117,8 @@ def process_iot_event(event):
         payload['sensor_type'] = sensor_type
         payload['mqtt_topic'] = mqtt_topic
         
-        # Gera a chave S3
         s3_key = generate_s3_key(sensor_type, ingestion_time)
         
-        # Salva no S3
         success = save_telemetry_to_s3(payload, s3_key)
         
         if success:
