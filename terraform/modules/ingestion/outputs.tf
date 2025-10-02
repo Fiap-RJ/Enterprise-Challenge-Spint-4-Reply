@@ -51,6 +51,11 @@ output "label_ingestion_lambda_arn" {
   value       = aws_lambda_function.label_ingestion.arn
 }
 
+output "label_ingestion_lambda_handler" {
+  description = "Handler da função Lambda Label Ingestion"
+  value       = aws_lambda_function.label_ingestion.handler
+}
+
 # --- EVENTBRIDGE ---
 
 output "eventbridge_rule_name" {
@@ -156,5 +161,22 @@ output "simulator_permissions" {
     iot_permissions     = ["iot:Publish"]
     dynamodb_resource   = aws_dynamodb_table.machine_state.arn
     iot_resource        = "arn:aws:iot:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:topic/industrial/machine/*"
+  }
+}
+
+# --- CONFIGURAÇÕES DO LABEL INGESTION ---
+
+output "label_ingestion_environment_variables" {
+  description = "Variáveis de ambiente configuradas para o Lambda Label Ingestion"
+  value = {
+    DYNAMODB_TABLE_NAME = aws_dynamodb_table.falha_history.name
+  }
+}
+
+output "label_ingestion_permissions" {
+  description = "Permissões configuradas para o Lambda Label Ingestion"
+  value = {
+    dynamodb_permissions = ["dynamodb:PutItem"]
+    dynamodb_resource   = aws_dynamodb_table.falha_history.arn
   }
 }

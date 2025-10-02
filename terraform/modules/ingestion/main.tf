@@ -63,9 +63,9 @@ resource "aws_dynamodb_table" "machine_state" {
   })
 }
 
-# Tabela para histórico de falhas (usado pelo Label Ingestion)
-resource "aws_dynamodb_table" "falha_history" {
-  name           = var.falha_history_table_name
+# Tabela para histórico de labels (usado pelo Label Ingestion)
+resource "aws_dynamodb_table" "label_history" {
+  name           = var.label_history_table_name
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "machine_id"
   range_key      = "timestamp_utc"
@@ -81,8 +81,8 @@ resource "aws_dynamodb_table" "falha_history" {
   }
 
   tags = merge(var.tags, {
-    Name    = var.falha_history_table_name
-    Purpose = "Failure history for self-labeling"
+    Name    = var.label_history_table_name
+    Purpose = "Label history for self-labeling"
   })
 }
 
@@ -192,7 +192,7 @@ resource "aws_iam_role_policy_attachment" "ingestion_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# Role para Lambda Label Ingestion (eventos de falha)
+# Role para Lambda Label Ingestion 
 resource "aws_iam_role" "label_ingestion_role" {
   name = "${var.project_name}-label-ingestion-role"
 
@@ -214,7 +214,7 @@ resource "aws_iam_role" "label_ingestion_role" {
   })
 }
 
-# Policy para Lambda Label Ingestion (apenas DynamoDB para salvar falhas)
+# Policy para Lambda Label Ingestion 
 resource "aws_iam_role_policy" "label_ingestion_policy" {
   name = "${var.project_name}-label-ingestion-policy"
   role = aws_iam_role.label_ingestion_role.id
@@ -227,7 +227,7 @@ resource "aws_iam_role_policy" "label_ingestion_policy" {
         Action = [
           "dynamodb:PutItem"
         ]
-        Resource = aws_dynamodb_table.falha_history.arn
+        Resource = aws_dynamodb_table.label_history.arn
       }
     ]
   })
@@ -321,22 +321,21 @@ resource "aws_lambda_function" "ingestion" {
   })
 }
 
-# Lambda Label Ingestion (eventos de falha) - placeholder por enquanto
 resource "aws_lambda_function" "label_ingestion" {
   function_name = "${var.project_name}-label-ingestion"
   role          = aws_iam_role.label_ingestion_role.arn
-  handler       = "label_ingestion.handler"
+  handler       = "label_ingestion_lambda.lambda_handler"
   runtime       = "python3.11"
   
-  # Usar arquivo placeholder
-  filename = var.lambda_placeholder_zip_path
+  filename         = data.archive_file.label_ingestion_zip.output_path
+  source_code_hash = data.archive_file.label_ingestion_zip.output_base64sha256
 
   timeout     = var.lambda_timeout
   memory_size = var.lambda_memory_size
 
   environment {
     variables = {
-      FALHA_HISTORY_TABLE = aws_dynamodb_table.falha_history.name
+      DYNAMODB_TABLE_NAME = aws_dynamodb_table.label_history.name
     }
   }
 
@@ -409,7 +408,7 @@ resource "aws_iot_topic_rule" "telemetry_ingestion_rule" {
   })
 }
 
-# Permissão para IoT Core invocar a Lambda Label Ingestion (eventos de falha)
+# Permissão para IoT Core invocar a Lambda Label Ingestion
 resource "aws_lambda_permission" "allow_iot_failure_invoke" {
   statement_id  = "AllowExecutionFromIoTFailure"
   action        = "lambda:InvokeFunction"

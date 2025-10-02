@@ -57,10 +57,10 @@ variable "machine_state_table_name" {
   default     = "MachineState"
 }
 
-variable "falha_history_table_name" {
-  description = "Nome da tabela DynamoDB para histórico de falhas"
+variable "label_history_table_name" {
+  description = "Nome da tabela DynamoDB para histórico de labels"
   type        = string
-  default     = "FalhaHistory"
+  default     = "LabelHistory"
 }
 
 # --- CONFIGURAÇÕES DE ARTEFATOS ---
