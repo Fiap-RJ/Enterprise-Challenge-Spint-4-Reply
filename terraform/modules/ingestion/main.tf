@@ -248,7 +248,7 @@ data "aws_caller_identity" "current" {}
 # Empacota o código do Simulator
 data "archive_file" "simulator_zip" {
   type        = "zip"
-  source_file = "${path.module}/../../src/ingestion/sensor_simulator.py"
+  source_file = "${path.root}/src/ingestion/sensor_simulator.py"
   output_path = "${path.module}/simulator.zip"
 }
 
@@ -286,7 +286,7 @@ resource "aws_lambda_function" "simulator" {
 # Empacota o código do Ingestion Processor
 data "archive_file" "ingestion_zip" {
   type        = "zip"
-  source_file = "${path.module}/../../src/ingestion/ingestion_processor.py"
+  source_file = "${path.root}/src/ingestion/ingestion_processor.py"
   output_path = "${path.module}/ingestion.zip"
 }
 
@@ -321,6 +321,14 @@ resource "aws_lambda_function" "ingestion" {
   })
 }
 
+# Empacota o código do Label Ingestion
+data "archive_file" "label_ingestion_zip" {
+  type        = "zip"
+  source_file = "${path.root}/src/ingestion/label_ingestion_lambda.py"
+  output_path = "${path.module}/label_ingestion.zip"
+}
+
+# Lambda Label Ingestion (eventos de falha) - com código real
 resource "aws_lambda_function" "label_ingestion" {
   function_name = "${var.project_name}-label-ingestion"
   role          = aws_iam_role.label_ingestion_role.arn

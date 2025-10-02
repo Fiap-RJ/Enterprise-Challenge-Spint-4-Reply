@@ -84,10 +84,7 @@ variable "tags" {
   description = "Tags adicionais para os recursos"
   type        = map(string)
   default = {
-    Project     = "MLOps Industrial"
-    Owner       = "DevOps Team"
-    Purpose     = "Predictive Maintenance"
-    CostCenter  = "Engineering"
-    Compliance  = "Internal"
+    Project     = "Enterprise Challenge - Reply"
+    Owner       = "Fiap-RJ Team"
   }
 }
