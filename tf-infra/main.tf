@@ -52,8 +52,6 @@ module "ingestion" {
   machine_state_table_name = var.machine_state_table_name
   label_history_table_name = var.label_history_table_name
 
-  # Configurações de artefatos (placeholder)
-  lambda_placeholder_zip_path = var.lambda_placeholder_zip_path
 
   tags = var.tags
 }
