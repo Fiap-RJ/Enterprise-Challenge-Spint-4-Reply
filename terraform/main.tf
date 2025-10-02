@@ -50,7 +50,7 @@ module "ingestion" {
 
   # Configurações de tabelas DynamoDB
   machine_state_table_name = var.machine_state_table_name
-  falha_history_table_name = var.falha_history_table_name
+  label_history_table_name = var.label_history_table_name
 
   # Configurações de artefatos (placeholder)
   lambda_placeholder_zip_path = var.lambda_placeholder_zip_path

@@ -102,14 +102,14 @@ output "machine_state_table_arn" {
   value       = aws_dynamodb_table.machine_state.arn
 }
 
-output "falha_history_table_name" {
+output "label_history_table_name" {
   description = "Nome da tabela DynamoDB para histórico de falhas"
-  value       = aws_dynamodb_table.falha_history.name
+  value       = aws_dynamodb_table.label_history.name
 }
 
-output "falha_history_table_arn" {
+output "label_history_table_arn" {
   description = "ARN da tabela DynamoDB para histórico de falhas"
-  value       = aws_dynamodb_table.falha_history.arn
+  value       = aws_dynamodb_table.label_history.arn
 }
 
 # --- CONFIGURAÇÕES MQTT ---
@@ -169,7 +169,7 @@ output "simulator_permissions" {
 output "label_ingestion_environment_variables" {
   description = "Variáveis de ambiente configuradas para o Lambda Label Ingestion"
   value = {
-    DYNAMODB_TABLE_NAME = aws_dynamodb_table.falha_history.name
+    DYNAMODB_TABLE_NAME = aws_dynamodb_table.label_history.name
   }
 }
 
@@ -177,6 +177,6 @@ output "label_ingestion_permissions" {
   description = "Permissões configuradas para o Lambda Label Ingestion"
   value = {
     dynamodb_permissions = ["dynamodb:PutItem"]
-    dynamodb_resource   = aws_dynamodb_table.falha_history.arn
+    dynamodb_resource   = aws_dynamodb_table.label_history.arn
   }
 }

@@ -109,14 +109,9 @@ output "machine_state_table_arn" {
   value       = module.ingestion.machine_state_table_arn
 }
 
-output "falha_history_table_name" {
-  description = "Nome da tabela DynamoDB para histórico de falhas"
-  value       = module.ingestion.falha_history_table_name
-}
-
-output "falha_history_table_arn" {
-  description = "ARN da tabela DynamoDB para histórico de falhas"
-  value       = module.ingestion.falha_history_table_arn
+output "label_history_table_name" {
+  description = "Nome da tabela DynamoDB para histórico de labels"
+  value       = module.ingestion.label_history_table_name
 }
 
 # --- CONFIGURAÇÕES MQTT ---
