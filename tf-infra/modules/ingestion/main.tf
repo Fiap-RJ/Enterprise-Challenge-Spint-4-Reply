@@ -404,7 +404,7 @@ resource "aws_iot_topic_rule" "telemetry_ingestion_rule" {
   enabled     = true
 
   # Captura APENAS tópicos de telemetria com tópico incluído
-  sql         = "SELECT *, topic() as mqtt_topic FROM 'industrial/machine/+/telemetry/+'"
+  sql         = "SELECT *, topic() as mqtt_topic FROM 'industrial/machine/+/+'"
   sql_version = "2016-03-23"
 
   lambda {

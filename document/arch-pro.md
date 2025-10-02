@@ -49,8 +49,8 @@ A premissa é que cada sensor publica em seu próprio tópico, simulando um cen�
 
 | Tipo de Dado | Estrutura do Tópico | Detalhes do Payload |
 | :--- | :--- | :--- |
-| **Leitura de Temperatura** | `industrial/machine/{machine_id}/telemetry/temperature` | Contém a leitura de temperatura em graus Celsius (`°C`) para um timestamp específico. |
-| **Leitura de Vibração** | `industrial/machine/{machine_id}/telemetry/vibration` | Contém a leitura de vibração em mm/s RMS para um timestamp específico. |
+| **Leitura de Temperatura** | `industrial/machine/{machine_id}/temperature` | Contém a leitura de temperatura em graus Celsius (`°C`) para um timestamp específico. |
+| **Leitura de Vibração** | `industrial/machine/{machine_id}/vibration` | Contém a leitura de vibração em mm/s RMS para um timestamp específico. |
 | **Eventos de Falha** | `industrial/machine/{machine_id}/event/failure`| Contém o registro de um evento de falha, que servirá como rótulo para o treinamento. |
 
 
@@ -58,7 +58,7 @@ A premissa é que cada sensor publica em seu próprio tópico, simulando um cen�
 
 **1. Publicação de Temperatura para a Bomba PUMP-A01:**
 
-* **Tópico:** `industrial/machine/PUMP-A01/telemetry/temperature`
+* **Tópico:** `industrial/machine/PUMP-A01/temperature`
 * **Payload:**
     ```json
     {
@@ -70,7 +70,7 @@ A premissa é que cada sensor publica em seu próprio tópico, simulando um cen�
 
 **2. Publicação de Vibração para a Bomba PUMP-A01:**
 
-* **Tópico:** `industrial/machine/PUMP-A01/telemetry/vibration`
+* **Tópico:** `industrial/machine/PUMP-A01/vibration`
 * **Payload:**
     ```json
     {

@@ -40,8 +40,8 @@ EventBridge → Lambda Simulator → IoT Core → Lambda Ingestion → S3
 
 Conforme a arquitetura, os seguintes tópicos são utilizados:
 
-- `industrial/machine/{machine_id}/telemetry/temperature`
-- `industrial/machine/{machine_id}/telemetry/vibration`
+- `industrial/machine/{machine_id/temperature`
+- `industrial/machine/{machine_id/vibration`
 - `industrial/machine/{machine_id}/event/failure`
 
 ## Como Usar

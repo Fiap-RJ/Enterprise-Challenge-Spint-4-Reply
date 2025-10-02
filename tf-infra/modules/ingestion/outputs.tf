@@ -127,8 +127,8 @@ output "machine_ids" {
 output "mqtt_topics_examples" {
   description = "Exemplos dos tópicos MQTT que serão utilizados"
   value = {
-    temperature = "industrial/machine/{machine_id}/telemetry/temperature"
-    vibration   = "industrial/machine/{machine_id}/telemetry/vibration"
+    temperature = "industrial/machine/{machine_id}/temperature"
+    vibration   = "industrial/machine/{machine_id}/vibration"
     failure     = "industrial/machine/{machine_id}/event/failure"
   }
 }

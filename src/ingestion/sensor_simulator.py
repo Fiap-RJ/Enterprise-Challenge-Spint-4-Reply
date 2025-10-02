@@ -65,8 +65,13 @@ def get_machine_state(machine_id):
 def update_machine_state(state):
     """Atualiza o estado de uma máquina no DynamoDB."""
     try:
-        # Converte floats para Decimals para o DynamoDB
-        state_decimal = json.loads(json.dumps(state), parse_float=Decimal)
+        state_decimal = {}
+        for key, value in state.items():
+            if isinstance(value, (int, float, Decimal)):
+                state_decimal[key] = Decimal(str(value))
+            else:
+                state_decimal[key] = value
+        
         table.put_item(Item=state_decimal)
     except Exception as e:
         print(f"Erro ao atualizar estado para {state['machine_id']}: {e}")
