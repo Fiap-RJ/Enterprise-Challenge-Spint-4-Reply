@@ -18,7 +18,7 @@ variable "label_history_table_name" {
 }
 
 variable "realtime_features_table_name" {
-  description = "Nome da tabela DynamoDB para Feature Store
+  description = "Nome da tabela DynamoDB para Feature Store"
   type        = string
   default     = "RealtimeFeatures"
 }

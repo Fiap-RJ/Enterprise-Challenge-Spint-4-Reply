@@ -12,8 +12,8 @@ resource "aws_s3_bucket" "data_lake" {
   bucket = var.s3_bucket_name
 
   tags = merge(var.tags, {
-    Name        = "${var.project_name}-data-lake"
-    Purpose     = "MLOps Industrial Data Lake"
+    Name    = "${var.project_name}-data-lake"
+    Purpose = "MLOps Industrial Data Lake"
   })
 }
 
@@ -47,9 +47,9 @@ resource "aws_s3_bucket_public_access_block" "data_lake" {
 # --- 2. DYNAMODB TABLES ---
 
 resource "aws_dynamodb_table" "machine_state" {
-  name           = "${var.project_name}-${var.machine_state_table_name}"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "machine_id"
+  name         = "${var.project_name}-${var.machine_state_table_name}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "machine_id"
 
   attribute {
     name = "machine_id"
@@ -57,16 +57,16 @@ resource "aws_dynamodb_table" "machine_state" {
   }
 
   tags = merge(var.tags, {
-    Name        = aws_dynamodb_table.machine_state.name
-    Purpose     = "Machine degradation state for simulation"
+    Name    = "${var.project_name}-${var.machine_state_table_name}"
+    Purpose = "Machine degradation state for simulation"
   })
 }
- 
+
 resource "aws_dynamodb_table" "label_history" {
-  name           = "${var.project_name}-${var.label_history_table_name}"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "machine_id"
-  range_key      = "timestamp_utc"
+  name         = "${var.project_name}-${var.label_history_table_name}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "machine_id"
+  range_key    = "timestamp_utc"
 
   attribute {
     name = "machine_id"
@@ -79,8 +79,8 @@ resource "aws_dynamodb_table" "label_history" {
   }
 
   tags = merge(var.tags, {
-    Name        = aws_dynamodb_table.label_history.name
-    Purpose     = "Label history for self-labeling"
+    Name    = "${var.project_name}-${var.label_history_table_name}"
+    Purpose = "Label history for self-labeling"
   })
 }
 
@@ -244,7 +244,7 @@ resource "aws_lambda_function" "simulator" {
   role          = aws_iam_role.simulator_role.arn
   handler       = "sensor_simulator.lambda_handler"
   runtime       = "python3.12"
-  
+
   filename         = data.archive_file.simulator_zip.output_path
   source_code_hash = data.archive_file.simulator_zip.output_base64sha256
 
@@ -279,7 +279,7 @@ resource "aws_lambda_function" "ingestion" {
   role          = aws_iam_role.ingestion_role.arn
   handler       = "ingestion_processor.handler"
   runtime       = "python3.12"
-  
+
   filename         = data.archive_file.ingestion_zip.output_path
   source_code_hash = data.archive_file.ingestion_zip.output_base64sha256
 
@@ -314,7 +314,7 @@ resource "aws_lambda_function" "label_ingestion" {
   role          = aws_iam_role.label_ingestion_role.arn
   handler       = "label_ingestion_lambda.lambda_handler"
   runtime       = "python3.12"
-  
+
   filename         = data.archive_file.label_ingestion_zip.output_path
   source_code_hash = data.archive_file.label_ingestion_zip.output_base64sha256
 

@@ -24,6 +24,14 @@ terraform validate
 echo "Módulo de ingestão válido"
 cd ../..
 
+# Validar módulo de processamento
+echo "Validando módulo de processamento..."
+cd modules/processing
+terraform init -backend=false
+terraform validate
+echo "Módulo de processamento válido"
+cd ../..
+
 # Validar configuração principal
 echo "Validando configuração principal..."
 terraform init -backend=false
