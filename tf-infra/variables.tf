@@ -70,6 +70,25 @@ variable "label_history_table_name" {
   default     = "LabelHistory"
 }
 
+# --- CONFIGURAÇÕES DO MÓDULO PROCESSING ---
+
+variable "processing_schedule_expression" {
+  description = "Expressão de agendamento para o EventBridge Scheduler do processamento"
+  type        = string
+  default     = "rate(1 hours)"
+}
+
+variable "time_window_hours" {
+  description = "Janela de tempo em horas para processamento dos dados"
+  type        = number
+  default     = 1
+}
+
+variable "pandas_layer_zip_path" {
+  description = "Caminho para o arquivo ZIP do Lambda Layer do pandas"
+  type        = string
+  default     = "../dist/pandas_layer.zip"
+}
 
 # --- TAGS ---
 
