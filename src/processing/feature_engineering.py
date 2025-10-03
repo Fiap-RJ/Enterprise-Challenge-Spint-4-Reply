@@ -1,5 +1,10 @@
+"""
+Módulo de engenharia de features.
+Contém a lógica de cálculo de features preditivas e adição de labels.
+"""
 from datetime import datetime, timedelta, timezone
-from typing import Dict
+from typing import Dict, List
+
 
 def calculate_features(grouped_windows: Dict, previous_machine_states: Dict) -> Dict:
     """
@@ -66,3 +71,37 @@ def calculate_features(grouped_windows: Dict, previous_machine_states: Dict) -> 
 
     print("Cálculo de features concluído.")
     return final_features
+
+
+def add_predictive_label(features_dict: Dict, failure_events: List[Dict], prediction_horizon_hours: int) -> Dict:
+    """
+    Adiciona labels preditivas às features baseadas em falhas futuras.
+
+    Args:
+        features_dict: Dicionário com as features calculadas para cada máquina.
+        failure_events: Lista de eventos de falha do DynamoDB.
+        prediction_horizon_hours: Horizonte de predição em horas.
+
+    Returns:
+        Dicionário com features + labels preditivas.
+    """
+    if not failure_events:
+        print("Nenhum evento de falha encontrado. Labels serão definidas como 0.")
+        for machine_id in features_dict:
+            features_dict[machine_id]["label_falha_24h"] = 0
+        return features_dict
+
+    # Cria um mapeamento de máquinas que falharam no horizonte de predição
+    machines_with_failures = set()
+    for failure in failure_events:
+        machine_id = failure.get("machine_id")
+        if machine_id:
+            machines_with_failures.add(machine_id)
+
+    print(f"Encontradas {len(machines_with_failures)} máquinas com falhas no horizonte de {prediction_horizon_hours}h")
+
+    # Adiciona as labels preditivas
+    for machine_id, features in features_dict.items():
+        features["label_falha_24h"] = 1 if machine_id in machines_with_failures else 0
+
+    return features_dict

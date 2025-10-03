@@ -17,6 +17,12 @@ variable "label_history_table_name" {
   type        = string
 }
 
+variable "realtime_features_table_name" {
+  description = "Nome da tabela DynamoDB para Feature Store
+  type        = string
+  default     = "RealtimeFeatures"
+}
+
 variable "lambda_timeout" {
   description = "Timeout da função Lambda em segundos"
   type        = number
@@ -51,7 +57,7 @@ variable "pandas_layer_zip_path" {
 variable "initial_timestamp" {
   description = "Timestamp inicial para o parâmetro SSM (formato ISO 8601)"
   type        = string
-  default     = "2025-10-02T12:00:00Z"
+  default     = "2025-10-02T05:16:37.183000+00:00"
 }
 
 variable "prediction_horizon_hours" {
@@ -63,7 +69,7 @@ variable "prediction_horizon_hours" {
 variable "processing_lag_hours" {
   description = "Lag de processamento em horas para garantir dados completos"
   type        = number
-  default     = 0 # To-do: Alterar para 24
+  default     = 24
 }
 
 variable "tags" {

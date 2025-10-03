@@ -47,7 +47,7 @@ resource "aws_s3_bucket_public_access_block" "data_lake" {
 # --- 2. DYNAMODB TABLES ---
 
 resource "aws_dynamodb_table" "machine_state" {
-  name           = var.machine_state_table_name
+  name           = "${var.project_name}-${var.machine_state_table_name}"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "machine_id"
 
@@ -57,13 +57,13 @@ resource "aws_dynamodb_table" "machine_state" {
   }
 
   tags = merge(var.tags, {
-    Name    = var.machine_state_table_name
-    Purpose = "Machine degradation state for simulation"
+    Name        = aws_dynamodb_table.machine_state.name
+    Purpose     = "Machine degradation state for simulation"
   })
 }
-
+ 
 resource "aws_dynamodb_table" "label_history" {
-  name           = var.label_history_table_name
+  name           = "${var.project_name}-${var.label_history_table_name}"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "machine_id"
   range_key      = "timestamp_utc"
@@ -79,8 +79,8 @@ resource "aws_dynamodb_table" "label_history" {
   }
 
   tags = merge(var.tags, {
-    Name    = var.label_history_table_name
-    Purpose = "Label history for self-labeling"
+    Name        = aws_dynamodb_table.label_history.name
+    Purpose     = "Label history for self-labeling"
   })
 }
 

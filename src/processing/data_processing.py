@@ -1,5 +1,10 @@
+"""
+Módulo de processamento de dados.
+Contém a lógica de merge e agrupamento de eventos de sensores.
+"""
 from datetime import datetime, timezone
 from typing import List, Dict
+
 
 def merge_sensor_events(events: List[Dict]) -> Dict:
     """

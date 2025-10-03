@@ -18,7 +18,7 @@ resource "aws_lambda_layer_version" "pandas_layer" {
 # --- TABELA DYNAMODB PARA FEATURE STORE ---
 
 resource "aws_dynamodb_table" "realtime_features" {
-  name           = "${var.project_name}-RealtimeFeatures"
+  name           = "${var.project_name}-${var.realtime_features_table_name}"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "machine_id"
 
@@ -28,7 +28,7 @@ resource "aws_dynamodb_table" "realtime_features" {
   }
 
   tags = merge(var.tags, {
-    Name = "${var.project_name}-RealtimeFeatures"
+    Name = aws_dynamodb_table.realtime_features.name
     Type = "Feature Store"
   })
 }
@@ -119,6 +119,13 @@ resource "aws_iam_role_policy" "processing_lambda_policy" {
           "dynamodb:Scan"
         ]
         Resource = aws_dynamodb_table.realtime_features.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:Scan"
+        ]
+        Resource = "arn:aws:dynamodb:*:*:table/${var.label_history_table_name}"
       },
       {
         Effect = "Allow"
