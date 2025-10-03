@@ -148,7 +148,7 @@ O `Lambda Processor` também salva o dataset final, pronto para o ML:
 | :--- | :--- | :--- |
 | `vib_media_5h` | 4.85 | Feature Engineering |
 | `temp_max_24h` | 78.1 | Feature Engineering |
-| **`LABEL_FALHA_7D`** | 1 (Sim) ou 0 (Não) | Criado ao **unir** as *Features* de hoje com um Rótulo de Falha que ocorreu nos próximos 7 dias. |
+| **`falha_imediata`** | 1 (Sim) ou 0 (Não) | Criado ao **unir** as *Features* com um Rótulo de Falha |
 
 ### 4.4 Orquestração Avançada (Próximos Passos)
 
