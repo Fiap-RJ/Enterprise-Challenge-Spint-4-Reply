@@ -42,3 +42,14 @@ output "processing_schedule_arn" {
   value       = aws_cloudwatch_event_rule.processing_schedule.arn
 }
 
+
+output "ssm_parameter_name" {
+  description = "Nome do parâmetro SSM para gerenciamento de estado"
+  value       = aws_ssm_parameter.processing_state.name
+}
+
+output "ssm_parameter_arn" {
+  description = "ARN do parâmetro SSM para gerenciamento de estado"
+  value       = aws_ssm_parameter.processing_state.arn
+}
+

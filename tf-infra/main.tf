@@ -52,6 +52,7 @@ module "processing" {
 
   project_name    = var.project_name
   s3_bucket_name  = var.s3_bucket_name
+  label_history_table_name = module.ingestion.label_history_table_name
 
   processing_schedule_expression = var.processing_schedule_expression
   time_window_hours             = var.time_window_hours

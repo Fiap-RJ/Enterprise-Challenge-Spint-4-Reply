@@ -12,6 +12,11 @@ variable "s3_bucket_name" {
   type        = string
 }
 
+variable "label_history_table_name" {
+  description = "Nome da tabela DynamoDB para histórico de falhas (criada pelo módulo de ingestão)"
+  type        = string
+}
+
 variable "lambda_timeout" {
   description = "Timeout da função Lambda em segundos"
   type        = number
@@ -42,6 +47,24 @@ variable "pandas_layer_zip_path" {
   default     = "./lambda_artifacts/pandas_layer.zip"
 }
 
+
+variable "initial_timestamp" {
+  description = "Timestamp inicial para o parâmetro SSM (formato ISO 8601)"
+  type        = string
+  default     = "2025-10-02T12:00:00Z"
+}
+
+variable "prediction_horizon_hours" {
+  description = "Horizonte de predição em horas para as labels"
+  type        = number
+  default     = 24
+}
+
+variable "processing_lag_hours" {
+  description = "Lag de processamento em horas para garantir dados completos"
+  type        = number
+  default     = 0 # To-do: Alterar para 24
+}
 
 variable "tags" {
   description = "Tags adicionais para os recursos"

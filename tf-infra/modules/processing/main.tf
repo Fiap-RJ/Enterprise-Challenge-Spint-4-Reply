@@ -10,7 +10,7 @@
 resource "aws_lambda_layer_version" "pandas_layer" {
   filename            = var.pandas_layer_zip_path
   layer_name          = "${var.project_name}-pandas-layer"
-  compatible_runtimes = ["python3.11"]
+  compatible_runtimes = ["python3.12"]
   description         = "Lambda Layer contendo a biblioteca pandas para processamento de dados"
 
 }
@@ -30,6 +30,22 @@ resource "aws_dynamodb_table" "realtime_features" {
   tags = merge(var.tags, {
     Name = "${var.project_name}-RealtimeFeatures"
     Type = "Feature Store"
+  })
+}
+
+
+# --- SSM PARAMETER STORE PARA GERENCIAMENTO DE ESTADO ---
+
+resource "aws_ssm_parameter" "processing_state" {
+  name  = "/${var.project_name}/processing/last-processed-timestamp"
+  type  = "String"
+  value = var.initial_timestamp
+
+  description = "Timestamp do último processamento realizado pelo Lambda de processamento"
+  
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-processing-state"
+    Type = "SSM Parameter"
   })
 }
 
@@ -103,6 +119,14 @@ resource "aws_iam_role_policy" "processing_lambda_policy" {
           "dynamodb:Scan"
         ]
         Resource = aws_dynamodb_table.realtime_features.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:PutParameter"
+        ]
+        Resource = aws_ssm_parameter.processing_state.arn
       }
     ]
   })
@@ -120,7 +144,7 @@ resource "aws_lambda_function" "processing_lambda" {
   function_name = "${var.project_name}-processing-lambda"
   role          = aws_iam_role.processing_lambda_role.arn
   handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.11"
+  runtime       = "python3.12"
   
   filename         = data.archive_file.processing_lambda_zip.output_path
   source_code_hash = data.archive_file.processing_lambda_zip.output_base64sha256
@@ -132,9 +156,13 @@ resource "aws_lambda_function" "processing_lambda" {
 
   environment {
     variables = {
-      DATA_LAKE_BUCKET    = var.s3_bucket_name
-      DYNAMODB_TABLE_NAME = aws_dynamodb_table.realtime_features.name
-      TIME_WINDOW         = var.time_window_hours
+      DATA_LAKE_BUCKET              = var.s3_bucket_name
+      DYNAMODB_TABLE_NAME           = aws_dynamodb_table.realtime_features.name
+      DYNAMODB_LABEL_HISTORY_TABLE  = var.label_history_table_name
+      SSM_PARAMETER_NAME            = aws_ssm_parameter.processing_state.name
+      TIME_WINDOW                   = var.time_window_hours
+      PREDICTION_HORIZON_HOURS      = var.prediction_horizon_hours
+      PROCESSING_LAG_HOURS          = var.processing_lag_hours
     }
   }
 

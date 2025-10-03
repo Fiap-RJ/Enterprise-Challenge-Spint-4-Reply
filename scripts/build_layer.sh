@@ -68,17 +68,22 @@ main() {
     
     # 2. Verificação do Python
     print_step "Verificando versão do Python..."
-    if ! command -v python3 > /dev/null 2>&1; then
-        print_error "Python3 não encontrado. Por favor, instale Python 3.11 ou superior."
+    if ! command -v python${PYTHON_VERSION} > /dev/null 2>&1; then
+        print_error "Python ${PYTHON_VERSION} não encontrado. Por favor, instale Python ${PYTHON_VERSION}."
         exit 1
     fi
     
-    PYTHON_VER=$(python3 --version 2>&1 | cut -d' ' -f2 | cut -d'.' -f1,2)
+    PYTHON_VER=$(python${PYTHON_VERSION} --version 2>&1 | cut -d' ' -f2 | cut -d'.' -f1,2)
     print_step "Versão do Python detectada: ${PYTHON_VER}"
     
+    if [ "${PYTHON_VER}" != "${PYTHON_VERSION}" ]; then
+        print_error "Versão do Python (${PYTHON_VER}) não corresponde à versão esperada (${PYTHON_VERSION})."
+        exit 1
+    fi
+    
     # 3. Criação do ambiente virtual
-    print_step "Criando ambiente virtual Python..."
-    python3 -m venv "${BUILD_DIR}/venv"
+    print_step "Criando ambiente virtual Python ${PYTHON_VERSION}..."
+    python${PYTHON_VERSION} -m venv "${BUILD_DIR}/venv"
     source "${BUILD_DIR}/venv/bin/activate"
     
     # 4. Atualização do pip

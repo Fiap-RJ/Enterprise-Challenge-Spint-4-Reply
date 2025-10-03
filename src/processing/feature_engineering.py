@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict
 
 def calculate_features(grouped_windows: Dict, previous_machine_states: Dict) -> Dict:
@@ -36,6 +36,12 @@ def calculate_features(grouped_windows: Dict, previous_machine_states: Dict) -> 
         last_max_temp_value = last_max_temp_state["value"]
         last_max_temp_ts = datetime.fromisoformat(last_max_temp_state["timestamp"])
         current_window_ts = datetime.fromisoformat(window_data["timestamp_janela"])
+        
+        # Garante que ambos os timestamps sejam timezone-aware (UTC)
+        if last_max_temp_ts.tzinfo is None:
+            last_max_temp_ts = last_max_temp_ts.replace(tzinfo=timezone.utc)
+        if current_window_ts.tzinfo is None:
+            current_window_ts = current_window_ts.replace(tzinfo=timezone.utc)
 
         if (current_window_ts - last_max_temp_ts) > timedelta(hours=24):
             new_max_temp_value = window_data.get("temperatura") or 0
@@ -46,10 +52,9 @@ def calculate_features(grouped_windows: Dict, previous_machine_states: Dict) -> 
         # --- Montagem do resultado final para esta máquina ---
         final_features[machine_id] = {
             "machine_id": machine_id,
-            "timestamp_processamento": datetime.utcnow().isoformat() + 'Z',
+            "timestamp_processamento": datetime.now(timezone.utc).isoformat(),
             "vib_media_5h": round(new_avg_vibration, 4),
-            "temp_max_24h": round(new_max_temp_value, 2),
-            "falha_imediata": 1 if window_data.get("falha") else 0
+            "temp_max_24h": round(new_max_temp_value, 2)
         }
 
         # --- Atualiza o estado da máquina para ser salvo ou usado na próxima iteração ---

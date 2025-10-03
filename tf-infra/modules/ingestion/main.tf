@@ -243,7 +243,7 @@ resource "aws_lambda_function" "simulator" {
   function_name = "${var.project_name}-simulator"
   role          = aws_iam_role.simulator_role.arn
   handler       = "sensor_simulator.lambda_handler"
-  runtime       = "python3.11"
+  runtime       = "python3.12"
   
   filename         = data.archive_file.simulator_zip.output_path
   source_code_hash = data.archive_file.simulator_zip.output_base64sha256
@@ -278,7 +278,7 @@ resource "aws_lambda_function" "ingestion" {
   function_name = "${var.project_name}-ingestion"
   role          = aws_iam_role.ingestion_role.arn
   handler       = "ingestion_processor.handler"
-  runtime       = "python3.11"
+  runtime       = "python3.12"
   
   filename         = data.archive_file.ingestion_zip.output_path
   source_code_hash = data.archive_file.ingestion_zip.output_base64sha256
@@ -313,7 +313,7 @@ resource "aws_lambda_function" "label_ingestion" {
   function_name = "${var.project_name}-label-ingestion"
   role          = aws_iam_role.label_ingestion_role.arn
   handler       = "label_ingestion_lambda.lambda_handler"
-  runtime       = "python3.11"
+  runtime       = "python3.12"
   
   filename         = data.archive_file.label_ingestion_zip.output_path
   source_code_hash = data.archive_file.label_ingestion_zip.output_base64sha256
