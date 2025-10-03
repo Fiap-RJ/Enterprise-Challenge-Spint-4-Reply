@@ -75,7 +75,7 @@ variable "label_history_table_name" {
 variable "processing_schedule_expression" {
   description = "Expressão de agendamento para o EventBridge Scheduler do processamento"
   type        = string
-  default     = "rate(1 hours)"
+  default     = "rate(1 hour)"
 }
 
 variable "time_window_hours" {

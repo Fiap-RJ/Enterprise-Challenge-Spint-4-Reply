@@ -27,7 +27,7 @@ variable "lambda_memory_size" {
 variable "processing_schedule_expression" {
   description = "Expressão de agendamento para o EventBridge Scheduler"
   type        = string
-  default     = "rate(1 hours)"
+  default     = "rate(1 hour)"
 }
 
 variable "time_window_hours" {

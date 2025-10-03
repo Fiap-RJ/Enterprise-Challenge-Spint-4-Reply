@@ -189,10 +189,10 @@ output "pandas_layer_arn" {
 
 output "processing_schedule_name" {
   description = "Nome do EventBridge Scheduler para processamento"
-  value       = aws_scheduler_schedule.processing_schedule.name
+  value       = module.processing.processing_schedule_name
 }
 
 output "processing_schedule_arn" {
   description = "ARN do EventBridge Scheduler para processamento"
-  value       = aws_scheduler_schedule.processing_schedule.arn
+  value       = module.processing.processing_schedule_arn
 }

@@ -32,3 +32,13 @@ output "processing_lambda_role_arn" {
   value       = aws_iam_role.processing_lambda_role.arn
 }
 
+output "processing_schedule_name" {
+  description = "Nome do EventBridge Scheduler para processamento"
+  value       = aws_cloudwatch_event_rule.processing_schedule.name
+}
+
+output "processing_schedule_arn" {
+  description = "ARN do EventBridge Scheduler para processamento"
+  value       = aws_cloudwatch_event_rule.processing_schedule.arn
+}
+
