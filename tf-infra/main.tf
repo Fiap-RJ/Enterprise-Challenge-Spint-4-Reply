@@ -44,6 +44,24 @@ module "ingestion" {
   machine_state_table_name = var.machine_state_table_name
   label_history_table_name = var.label_history_table_name
 
+  tags = var.tags
+}
+
+module "processing" {
+  source = "./modules/processing"
+
+  project_name    = var.project_name
+  s3_bucket_name  = var.s3_bucket_name
+  label_history_table_name = module.ingestion.label_history_table_name
+
+  processing_schedule_expression = var.processing_schedule_expression
+  time_window_hours             = var.time_window_hours
+
+  lambda_timeout     = var.lambda_timeout
+  lambda_memory_size = var.lambda_memory_size
+
+  pandas_layer_zip_path = var.pandas_layer_zip_path
 
   tags = var.tags
 }
+

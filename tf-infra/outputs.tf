@@ -159,3 +159,40 @@ output "label_ingestion_permissions" {
   description = "Permissões configuradas para o Lambda Label Ingestion"
   value       = module.ingestion.label_ingestion_permissions
 }
+
+# --- PROCESSING MODULE OUTPUTS ---
+
+output "processing_lambda_name" {
+  description = "Nome da função Lambda de processamento"
+  value       = module.processing.processing_lambda_function_name
+}
+
+output "processing_lambda_arn" {
+  description = "ARN da função Lambda de processamento"
+  value       = module.processing.processing_lambda_arn
+}
+
+output "realtime_features_table_name" {
+  description = "Nome da tabela DynamoDB para Feature Store"
+  value       = module.processing.realtime_features_table_name
+}
+
+output "realtime_features_table_arn" {
+  description = "ARN da tabela DynamoDB para Feature Store"
+  value       = module.processing.realtime_features_table_arn
+}
+
+output "pandas_layer_arn" {
+  description = "ARN do Lambda Layer do pandas"
+  value       = module.processing.pandas_layer_arn
+}
+
+output "processing_schedule_name" {
+  description = "Nome do EventBridge Scheduler para processamento"
+  value       = module.processing.processing_schedule_name
+}
+
+output "processing_schedule_arn" {
+  description = "ARN do EventBridge Scheduler para processamento"
+  value       = module.processing.processing_schedule_arn
+}
