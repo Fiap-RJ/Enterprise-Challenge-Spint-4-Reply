@@ -90,13 +90,49 @@ variable "pandas_layer_zip_path" {
   default     = "../dist/pandas_layer.zip"
 }
 
+variable "data_prep_lambda_zip_path" {
+  description = "Caminho para o ZIP da data_prep_lambda"
+  type        = string
+  default     = "../lambda_artifacts/data_prep_lambda.zip"
+}
+
+variable "model_eval_lambda_zip_path" {
+  description = "Caminho para o ZIP da model_evaluation_lambda"
+  type        = string
+  default     = "../lambda_artifacts/model_evaluation_lambda.zip"
+}
+
+variable "training_image_uri" {
+  description = "URI da imagem Docker (algoritmo) usada no SageMaker Training Job"
+  type        = string
+  default     = "../dist/training_image.tar.gz"
+}
+
+variable "training_hyperparameters" {
+  description = "Mapa de hiperparâmetros do modelo"
+  type        = map(string)
+  default     = {}
+}
+
+variable "sagemaker_training_role_arn" {
+  description = "ARN da IAM Role usada pelo SageMaker Training Job"
+  type        = string
+  default     = "arn:aws:iam::641055565860:role/service-role/AmazonSageMaker-ExecutionRole-20250115T051637"
+}
+
+variable "training_pipeline_schedule_expression" {
+  description = "Expressão de agendamento para execução automática do pipeline de treinamento"
+  type        = string
+  default     = "cron(0/5 * * * ? *)" # A cada 5 minutos
+}
+
 # --- TAGS ---
 
 variable "tags" {
   description = "Tags adicionais para os recursos"
   type        = map(string)
   default = {
-    Project     = "Enterprise Challenge - Reply"
-    Owner       = "Fiap-RJ Team"
+    Project = "Enterprise Challenge - Reply"
+    Owner   = "Fiap-RJ Team"
   }
 }

@@ -30,12 +30,12 @@ A arquitetura adota um padrão robusto de **Injestão de Streaming** para os dad
 
 ### 2.1 Contrato Principal de Ativos e Sensores
 
-| Item | Padrão | Detalhes |
-| :--- | :--- | :--- |
-| **Ativos Simulados** | **5 Máquinas** (Ex: PUMP-A01, FAN-B02, etc.) | Usadas para generalizar o modelo. O **`machine_id`** é a chave primária. |
-| **Sensores** | Vibração (RMS) e Temperatura ($^\circ C$) | Os dois indicadores principais da saúde mecânica. |
-| **Tópicos MQTT** | **Três Tópicos:** Vibração, Temperatura e **Rótulo de Falha**. | Permite o roteamento de dados e eventos separadamente. |
-| **Chave de Correlacão**| `machine_id` + `timestamp_utc` | Usados para unir leituras de sensores e rótulos de falha. |
+| Item                    | Padrão                                                         | Detalhes                                                                 |
+| :---------------------- | :------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| **Ativos Simulados**    | **5 Máquinas** (Ex: PUMP-A01, FAN-B02, etc.)                   | Usadas para generalizar o modelo. O **`machine_id`** é a chave primária. |
+| **Sensores**            | Vibração (RMS) e Temperatura ($^\circ C$)                      | Os dois indicadores principais da saúde mecânica.                        |
+| **Tópicos MQTT**        | **Três Tópicos:** Vibração, Temperatura e **Rótulo de Falha**. | Permite o roteamento de dados e eventos separadamente.                   |
+| **Chave de Correlacão** | `machine_id` + `timestamp_utc`                                 | Usados para unir leituras de sensores e rótulos de falha.                |
 
 ---
 
@@ -47,11 +47,11 @@ A premissa é que cada sensor publica em seu próprio tópico, simulando um cen�
 
 ### Definição dos Tópicos
 
-| Tipo de Dado | Estrutura do Tópico | Detalhes do Payload |
-| :--- | :--- | :--- |
-| **Leitura de Temperatura** | `industrial/machine/{machine_id}/temperature` | Contém a leitura de temperatura em graus Celsius (`°C`) para um timestamp específico. |
-| **Leitura de Vibração** | `industrial/machine/{machine_id}/vibration` | Contém a leitura de vibração em mm/s RMS para um timestamp específico. |
-| **Eventos de Falha** | `industrial/machine/{machine_id}/event/failure`| Contém o registro de um evento de falha, que servirá como rótulo para o treinamento. |
+| Tipo de Dado               | Estrutura do Tópico                             | Detalhes do Payload                                                                   |
+| :------------------------- | :---------------------------------------------- | :------------------------------------------------------------------------------------ |
+| **Leitura de Temperatura** | `industrial/machine/{machine_id}/temperature`   | Contém a leitura de temperatura em graus Celsius (`°C`) para um timestamp específico. |
+| **Leitura de Vibração**    | `industrial/machine/{machine_id}/vibration`     | Contém a leitura de vibração em mm/s RMS para um timestamp específico.                |
+| **Eventos de Falha**       | `industrial/machine/{machine_id}/event/failure` | Contém o registro de um evento de falha, que servirá como rótulo para o treinamento.  |
 
 
 ### Exemplos de Publicação
@@ -101,18 +101,18 @@ Esta abordagem faz com que o **Lambda Simulator** seja a única fonte de verdade
 
 **Tópico e Payload de Rótulo de Falha (Exemplo de Entrada de Evento):**
 
-| Tópico | Payload (Exemplo) |
-| :--- | :--- |
-|`industrial/machine/PUMP-A01/event/failure` | `{"machine_id": "PUMP-A01", "timestamp_utc": "2025-10-15T09:00:00Z", "codigo_evento": "FALHA_DETECTADA"}` |
+| Tópico                                      | Payload (Exemplo)                                                                                         |
+| :------------------------------------------ | :-------------------------------------------------------------------------------------------------------- |
+| `industrial/machine/PUMP-A01/event/failure` | `{"machine_id": "PUMP-A01", "timestamp_utc": "2025-10-15T09:00:00Z", "codigo_evento": "FALHA_DETECTADA"}` |
 
 ### 3.2 O Papel do Lambda Ingestion
 
 O **Lambda Ingestion** tem um papel simplificado: é um *proxy* que recebe todas as mensagens (Vibração, Temperatura) do IoT Core e as salva imediatamente no S3.
 
-| Item | Fluxo | Responsabilidade |
-| :--- | :--- | :--- |
-| **IoT Core Rules**| Roteiam todas as mensagens dos **três tópicos** (Vibração, Temperatura) para o `Lambda Ingestion`. |
-| **Lambda Ingestion**| Recebe o evento e escreve o JSON bruto no S3. Não faz processamento. | **Destino:** S3 (Data Lake) no prefixo `raw/`. |
+| Item                 | Fluxo                                                                                              | Responsabilidade                               |
+| :------------------- | :------------------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| **IoT Core Rules**   | Roteiam todas as mensagens dos **três tópicos** (Vibração, Temperatura) para o `Lambda Ingestion`. |
+| **Lambda Ingestion** | Recebe o evento e escreve o JSON bruto no S3. Não faz processamento.                               | **Destino:** S3 (Data Lake) no prefixo `raw/`. |
 
 ---
 
@@ -122,20 +122,20 @@ O **Lambda Ingestion** tem um papel simplificado: é um *proxy* que recebe todas
 
 O `Lambda Processor` é acionado periodicamente via **EventBridge Scheduler** (ex: a cada 6 horas) e realiza o processamento em lote dos dados brutos que se acumularam no S3.
 
-| Função | Detalhe |
-| :--- | :--- |
-| **Extração (E)** | Lê o lote de arquivos JSON Lines do S3 (`raw/`). Após o processamento bem-sucedido, os arquivos são movidos para um prefixo de arquivamento (ex: `archive/`) para evitar reprocessamento. |
-| **Junção de Dados**| **Correlaciona** as leituras de Vibração, Temperatura e Rótulos usando a técnica de **Janelas de Tempo (Tumbling Windows)**. Como os timestamps nunca são idênticos, os eventos são agrupados em pequenas janelas fixas (ex: 1 segundo) com base em `machine_id` e um timestamp "arredondado", permitindo a sincronização dos diferentes sensores. |
-| **Feature Engineering**| Calcula *features* preditivas (média móvel, desvio padrão) dentro das janelas de tempo e cria o **Rótulo Final** para o treinamento. |
+| Função                  | Detalhe                                                                                                                                                                                                                                                                                                                                            |
+| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Extração (E)**        | Lê o lote de arquivos JSON Lines do S3 (`raw/`). Após o processamento bem-sucedido, os arquivos são movidos para um prefixo de arquivamento (ex: `archive/`) para evitar reprocessamento.                                                                                                                                                          |
+| **Junção de Dados**     | **Correlaciona** as leituras de Vibração, Temperatura e Rótulos usando a técnica de **Janelas de Tempo (Tumbling Windows)**. Como os timestamps nunca são idênticos, os eventos são agrupados em pequenas janelas fixas (ex: 1 segundo) com base em `machine_id` e um timestamp "arredondado", permitindo a sincronização dos diferentes sensores. |
+| **Feature Engineering** | Calcula *features* preditivas (média móvel, desvio padrão) dentro das janelas de tempo e cria o **Rótulo Final** para o treinamento.                                                                                                                                                                                                               |
 
 ### 4.2 Feature Store (DynamoDB)
 
 O DynamoDB serve como repositório de Features de **Baixa Latência**, otimizado para a inferência em tempo real.
 
-| Tabela | Chave Primária | Conteúdo |
-| :--- | :--- | :--- |
-| **`MachineFeatureStore`** | `machine_id` | Armazena as *features* prontas (ex: `vib_media_5h`, `temp_max_24h`). |
-| **`FalhaHistory`** | `machine_id` + `timestamp_utc` | Armazena o histórico dos eventos de falha (os Rótulos). Usado para o *joining* na fase de treinamento. |
+| Tabela                    | Chave Primária                 | Conteúdo                                                                                               |
+| :------------------------ | :----------------------------- | :----------------------------------------------------------------------------------------------------- |
+| **`MachineFeatureStore`** | `machine_id`                   | Armazena as *features* prontas (ex: `vib_media_5h`, `temp_max_24h`).                                   |
+| **`FalhaHistory`**        | `machine_id` + `timestamp_utc` | Armazena o histórico dos eventos de falha (os Rótulos). Usado para o *joining* na fase de treinamento. |
 
 ### 4.3 Dataset de Treinamento
 
@@ -144,11 +144,11 @@ O `Lambda Processor` também salva o dataset final, pronto para o ML:
 * **Localização:** S3 (`s3://<bucket>/processed/training_data/`).
 * **Conteúdo:** Tabela de Features + Coluna de Rótulo.
 
-| Coluna | Exemplo de Valor | Fonte |
-| :--- | :--- | :--- |
-| `vib_media_5h` | 4.85 | Feature Engineering |
-| `temp_max_24h` | 78.1 | Feature Engineering |
-| **`falha_imediata`** | 1 (Sim) ou 0 (Não) | Criado ao **unir** as *Features* com um Rótulo de Falha |
+| Coluna                | Exemplo de Valor   | Fonte                                                            |
+| :-------------------- | :----------------- | :--------------------------------------------------------------- |
+| `vib_media_5h`        | 4.85               | Feature Engineering                                              |
+| `temp_max_24h`        | 78.1               | Feature Engineering                                              |
+| **`label_falha_24h`** | 1 (Sim) ou 0 (Não) | Criado ao **unir** as *Features* com um Rótulo de Falha 24 horas |
 
 ### 4.4 Orquestração Avançada (Próximos Passos)
 
@@ -156,24 +156,36 @@ Para o escopo atual, o `Lambda Processor` centraliza a lógica de ETL. Em um cen
 
 ---
 
-## 5. Módulo de Dashboard e Inferência
+## 5. Módulo de Treinamento e MLOps
+
+O treinamento do modelo não é um processo manual, mas sim um **pipeline automatizado e orquestrado**, garantindo a repetibilidade e a governança do ciclo de vida do modelo (MLOps).
+
+Fluxo Geral do Pipeline:
+
+`EventBridge Scheduler -> Step Functions -> [Preparação (Lambda) -> Treinamento (SageMaker) -> Avaliação (Lambda) -> Deploy (SageMaker)]`
+
+### 5.1 Etapas do Pipeline
+
+1.  **Gatilho Agendado (EventBridge):** O pipeline é iniciado automaticamente em um cronograma pré-definido (ex: semanalmente), garantindo que o modelo seja re-treinado com novos dados periodicamente.
+    
+2.  **Orquestração (AWS Step Functions):** Uma Máquina de Estados do Step Functions atua como o "maestro", gerenciando a execução de cada etapa, tratando erros e controlando a lógica condicional do fluxo.
+    
+3.  **Preparação dos Dados (Lambda):** A primeira etapa consolida os arquivos `.csv` de features do S3 (`processed/`) em um dataset unificado de treino e validação, pronto para ser consumido pelo SageMaker.
+    
+4.  **Treinamento do Modelo (SageMaker Training Job):** O Step Functions inicia um trabalho de treinamento no Amazon SageMaker, que provisiona a infraestrutura necessária, executa o script de treinamento no dataset preparado e salva o artefato do modelo (`model.tar.gz`) no S3.
+    
+5.  **Avaliação e Registro (Lambda & SageMaker Model Registry):** Após o treino, uma segunda Lambda avalia as métricas de performance do novo modelo. Se o modelo atingir os critérios de qualidade, ele é versionado e registrado no **SageMaker Model Registry**, uma prática essencial de MLOps.
+    
+6.  **Decisão e Deploy (Step Functions & SageMaker Endpoint):** Com base no resultado da avaliação, a máquina de estados decide se o novo modelo deve ser implantado. Em caso afirmativo, o **SageMaker Endpoint** é atualizado para servir a nova versão do modelo, finalizando o ciclo de CI/CD do modelo.
+---
+
+## 6. Módulo de Dashboard e Inferência
 
 ### Streamlit App (Interface do Usuário)
 
 O Frontend é o consumidor final das *Features* e dos resultados.
 
-| Fonte de Dados | Consumo | Propósito |
-| :--- | :--- | :--- |
-| **DynamoDB** | Leitura direta (`boto3`) da `MachineFeatureStore`. | Exibir o status de saúde e as Features atuais. |
-| **API de Inferência**| Mock local (inicialmente) ou SageMaker Endpoint. | Retorna a **probabilidade de falha**. Esta probabilidade é usada para colorir e alertar o usuário. |
-
-
-### Extra
--   Temperatura → **°C** entre **20 e 150**.
--   Vibração → **mm/s RMS** com valores **entre 0 e 10**, simulando falhas quando passa de **7–8 mm/s**.
-	- Normas ISO (como **ISO 10816 / ISO 20816**) definem limites em **mm/s RMS** para indicar condição da máquina:
-
-	-   Até **4,5 mm/s RMS** → bom.
-	-   **4,5 – 7,1 mm/s RMS** → atenção.
-	-   **7,1 – 11,2 mm/s RMS** → condição insatisfatória.
-	-   Acima de **11,2 mm/s RMS** → crítico.
+| Fonte de Dados        | Consumo                                            | Propósito                                                                                          |
+| :-------------------- | :------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| **DynamoDB**          | Leitura direta (`boto3`) da `MachineFeatureStore`. | Exibir o status de saúde e as Features atuais.                                                     |
+| **API de Inferência** | Mock local (inicialmente) ou SageMaker Endpoint.   | Retorna a **probabilidade de falha**. Esta probabilidade é usada para colorir e alertar o usuário. |
