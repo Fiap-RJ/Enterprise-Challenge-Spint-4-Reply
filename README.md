@@ -6,67 +6,96 @@
 
 <br>
 
-# Nome do projeto
-
-## Nome do grupo
+# FarmTech na era da cloud computing
 
 ## 👨‍🎓 Integrantes: 
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 1</a>
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 2</a>
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 3</a> 
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 4</a> 
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 5</a>
+- <a href="https://www.linkedin.com/in/arthur-alentejo">Arthur Guimarães Alentejo</a>
+- <a href="https://www.linkedin.com/in/michaelrodriguess">Michael Rodrigues</a>
+- <a href="https://www.linkedin.com/in/nathalia-vasconcelos-18a390292/">Nathalia Vasconcelos</a> 
 
 ## 👩‍🏫 Professores:
 ### Tutor(a) 
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do Tutor</a>
+- <a href="https://www.linkedin.com/company/inova-fusca">Lucas Gomes Moreira</a>
 ### Coordenador(a)
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do Coordenador</a>
-
+- <a href="https://www.linkedin.com/company/inova-fusca">Andre Godoi</a>
 
 ## 📜 Descrição
 
-*Descreva seu projeto com base no texto do PBL (até 600 palavras)*
+ 🤖 Banco de Dados e Machine Learning
 
+O projeto implementa uma solução de Manutenção Preditiva para equipamentos industriais utilizando Machine Learning e arquitetura serverless na AWS. A solução monitora sensores de vibração e temperatura de máquinas para prever falhas potenciais.
 
-## 📁 Estrutura de pastas
+### Arquitetura do Projeto
 
-Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
+A arquitetura adota um padrão robusto de **Injestão de Streaming** para dados brutos e **Processamento em Lote (Batch)** para engenharia de features:
 
-- <b>.github</b>: Nesta pasta ficarão os arquivos de configuração específicos do GitHub que ajudam a gerenciar e automatizar processos no repositório.
+1. **Fluxo de Dados**:
+   - Coleta de dados de sensores (temperatura e vibração) via IoT Core
+   - Processamento em tempo real com AWS Lambda
+   - Armazenamento em Data Lake (S3)
 
-- <b>assets</b>: aqui estão os arquivos relacionados a elementos não-estruturados deste repositório, como imagens.
+2. **Pipeline de ML**:
+   - Processamento em lote para feature engineering
+   - Treinamento de modelo preditivo com Amazon SageMaker
+   - Deploy do modelo em produção
 
-- <b>config</b>: Posicione aqui arquivos de configuração que são usados para definir parâmetros e ajustes do projeto.
+3. **Monitoramento**:
+   - Dashboard em tempo real com Streamlit
+   - Alertas para anomalias detectadas
 
-- <b>document</b>: aqui estão todos os documentos do projeto que as atividades poderão pedir. Na subpasta "other", adicione documentos complementares e menos importantes.
+### Como Executar o Projeto
 
-- <b>scripts</b>: Posicione aqui scripts auxiliares para tarefas específicas do seu projeto. Exemplo: deploy, migrações de banco de dados, backups.
+1. **Pré-requisitos**:
+   - Conta AWS configurada
+   - AWS CLI instalado e configurado
+   - Python 3.8+ e pip
 
-- <b>src</b>: Todo o código fonte criado para o desenvolvimento do projeto ao longo das 7 fases.
+2. **Configuração Inicial**:
+   ```bash
+   # Clonar o repositório
+   git clone https://github.com/Fiap-RJ/Enterprise-Challenge-Spint-4-Reply.git
+   
+   cd Enterprise-Challenge-Spint-4-Reply
+   
+   # Criar e ativar ambiente virtual
+   python -m venv .venv
+   source .venv/bin/activate  # No Windows: .venv\Scripts\activate
+   
+   # Instalar dependências
+   pip install -r requirements.txt
+   ```
 
-- <b>README.md</b>: arquivo que serve como guia e explicação geral sobre o projeto (o mesmo que você está lendo agora).
+3. **Implantação da Infraestrutura**:
+   ```bash
+   cd infrastructure
+   cdk deploy
+   ```
 
-## 🔧 Como executar o código
+4. **Executando o Dashboard**:
+   ```bash
+   cd src/dashboard
+   streamlit run app.py
+   ```
 
-*Acrescentar as informações necessárias sobre pré-requisitos (IDEs, serviços, bibliotecas etc.) e instalação básica do projeto, descrevendo eventuais versões utilizadas. Colocar um passo a passo de como o leitor pode baixar o seu código e executá-lo a partir de sua máquina ou seu repositório. Considere a explicação organizada em fase.*
+## 🎥 Vídeo de Apresentação
 
+Assista ao vídeo de 5 minutos que explica o projeto em detalhes:
 
-## 🗃 Histórico de lançamentos
+**[Link para o vídeo no YouTube](#)**
 
-* 0.5.0 - XX/XX/2024
-    * 
-* 0.4.0 - XX/XX/2024
-    * 
-* 0.3.0 - XX/XX/2024
-    * 
-* 0.2.0 - XX/XX/2024
-    * 
-* 0.1.0 - XX/XX/2024
-    *
+## � Estrutura de pastas
+
+- `.github/`: Configurações do GitHub Actions para CI/CD
+- `assets/`: Imagens e recursos visuais do projeto
+- `document/`: Documentação detalhada do projeto
+- `infrastructure/`: Código CDK para provisionamento da infraestrutura
+- `src/`: Código-fonte do projeto
+  - `data/`: Scripts para geração e processamento de dados
+  - `ml/`: Pipeline de machine learning
+  - `dashboard/`: Aplicação Streamlit para visualização
+  - `lambda/`: Funções AWS Lambda
+- `tests/`: Testes automatizados
 
 ## 📋 Licença
 
 <img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/agodoi/template">MODELO GIT FIAP</a> por <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://fiap.com.br">Fiap</a> está licenciado sobre <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Attribution 4.0 International</a>.</p>
-
-
