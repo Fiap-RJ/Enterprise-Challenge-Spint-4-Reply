@@ -1,60 +1,24 @@
 locals {
-  app_name = "inference-app"
-  region   = var.region
-  
-  # Caminhos para o Lambda Layer
-  lambda_layer_dir = "${path.module}/lambda_layers/python"
-  
-  # Nome do arquivo de requisitos
-  requirements_file = "${path.module}/../../../src/inference/requeriments.txt"
-  
-  # Nome da camada
-  layer_name = "${local.app_name}-dependencies"
+  app_name       = "inference-app"
+  region         = var.region
+  lambda_runtime = "python3.12"
 }
 
 data "aws_caller_identity" "current" {}
 
-# Cria o diretório para o layer e instala as dependências
-resource "null_resource" "install_dependencies" {
-  # Executa apenas se o diretório não existir ou se o arquivo de requisitos mudou
-  triggers = {
-    requirements = filemd5(local.requirements_file)
-  }
-
-  # Comandos para criar o diretório e instalar as dependências
-  provisioner "local-exec" {
-    command = <<-EOT
-      mkdir -p ${local.lambda_layer_dir}
-      pip install -r ${local.requirements_file} --target ${local.lambda_layer_dir}
-    EOT
-  }
-}
-
-# Cria o arquivo ZIP com as dependências
-data "archive_file" "layer_zip" {
-  depends_on  = [null_resource.install_dependencies]
+# --- ZIP do código da Lambda de inferência ---
+data "archive_file" "lambda_zip" {
   type        = "zip"
-  output_path = "${path.module}/lambda_layers/layer.zip"
-  source_dir  = local.lambda_layer_dir
-  
-  # Exclui arquivos desnecessários
-  excludes = [
-    "__pycache__",
-    "*.pyc",
-    "*.dist-info/*",
-    "*/__pycache__/*"
-  ]
+  source_file = "${path.root}/../src/inference/app.py"
+  output_path = "${path.module}/lambda_artifacts/inference_lambda.zip"
 }
 
-# Cria o Lambda Layer
+# --- LAMBDA LAYER (usando arquivo ZIP pré-construído) ---
 resource "aws_lambda_layer_version" "dependencies" {
-  layer_name          = local.layer_name
+  filename            = var.dependencies_layer_zip_path
+  layer_name          = "${var.project_name}-inference-dependencies"
+  compatible_runtimes = [local.lambda_runtime]
   description         = "Dependências para a função Lambda de inferência"
-  filename           = data.archive_file.layer_zip.output_path
-  source_code_hash   = data.archive_file.layer_zip.output_base64sha256
-  compatible_runtimes = [var.python_runtime]
-  
-  depends_on = [data.archive_file.layer_zip]
 }
 
 # IAM Role para a Lambda
@@ -110,8 +74,8 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
           "s3:ListBucket"
         ]
         Resource = [
-          "arn:aws:s3:::${var.s3_bucket_name != "" ? var.s3_bucket_name : "${local.app_name}-${data.aws_caller_identity.current.account_id}",
-          "arn:aws:s3:::${var.s3_bucket_name != "" ? var.s3_bucket_name : "${local.app_name}-${data.aws_caller_identity.current.account_id}/*"
+          "arn:aws:s3:::${var.s3_bucket_name != "" ? var.s3_bucket_name : format("%s-%s", local.app_name, data.aws_caller_identity.current.account_id)}",
+          "arn:aws:s3:::${var.s3_bucket_name != "" ? var.s3_bucket_name : format("%s-%s", local.app_name, data.aws_caller_identity.current.account_id)}/*"
         ]
       }
     ]
@@ -128,13 +92,13 @@ resource "aws_lambda_function" "inference_api" {
   runtime          = var.python_runtime
   timeout          = var.lambda_timeout
   memory_size      = var.lambda_memory_size
-  
+
   layers = [aws_lambda_layer_version.dependencies.arn]
 
   environment {
     variables = {
-      DYNAMODB_TABLE    = var.dynamodb_table_name
-      S3_BUCKET         = var.s3_bucket_name != "" ? var.s3_bucket_name : "${local.app_name}-${data.aws_caller_identity.current.account_id}"
+      DYNAMODB_TABLE     = var.dynamodb_table_name
+      S3_BUCKET          = var.s3_bucket_name != "" ? var.s3_bucket_name : "${local.app_name}-${data.aws_caller_identity.current.account_id}"
       PREDICTION_API_URL = var.prediction_api_url
     }
   }
@@ -144,25 +108,33 @@ resource "aws_lambda_function" "inference_api" {
 resource "aws_apigatewayv2_api" "api" {
   name          = "${local.app_name}-api"
   protocol_type = "HTTP"
-  target        = aws_lambda_function.inference_api.arn
 }
 
+resource "aws_apigatewayv2_integration" "lambda_integration" {
+  api_id                 = aws_apigatewayv2_api.api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.inference_api.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "proxy" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "ANY /{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_stage" "default" {
+  api_id      = aws_apigatewayv2_api.api.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+# Ajustar permissão Lambda
 resource "aws_lambda_permission" "api_gw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.inference_api.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*"
 }
 
-# Output the API endpoint
-output "api_endpoint" {
-  description = "API Gateway endpoint URL"
-  value       = aws_apigatewayv2_api.api.api_endpoint
-}
-
-# Output the Lambda function name
-output "lambda_function_name" {
-  description = "Name of the Lambda function"
-  value       = aws_lambda_function.inference_api.function_name
-}

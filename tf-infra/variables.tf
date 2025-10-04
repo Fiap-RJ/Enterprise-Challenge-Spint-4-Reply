@@ -85,9 +85,15 @@ variable "time_window_hours" {
 }
 
 variable "pandas_layer_zip_path" {
-  description = "Caminho para o arquivo ZIP do Lambda Layer do pandas"
+  description = "Caminho para o arquivo ZIP do Lambda Layer do pandas + scikit-learn"
   type        = string
-  default     = "../dist/pandas_layer.zip"
+  default     = "../dist/pandas_sklearn_layer.zip"
+}
+
+variable "inference_dependencies_layer_zip_path" {
+  description = "Caminho para o arquivo ZIP do Lambda Layer de dependências da inferência"
+  type        = string
+  default     = "../dist/inference_dependencies_layer.zip"
 }
 
 variable "data_prep_lambda_zip_path" {

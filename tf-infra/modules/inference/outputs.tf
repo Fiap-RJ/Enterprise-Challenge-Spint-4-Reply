@@ -20,7 +20,7 @@ output "lambda_role_arn" {
 
 output "s3_bucket_name" {
   description = "The name of the S3 bucket used for the application"
-  value       = local.s3_bucket_name
+  value       = var.s3_bucket_name != "" ? var.s3_bucket_name : "inference-app-${data.aws_caller_identity.current.account_id}"
 }
 
 output "dynamodb_table_name" {

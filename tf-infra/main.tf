@@ -72,7 +72,7 @@ module "training_pipeline" {
   s3_bucket_name = var.s3_bucket_name
 
   # Caminhos dos artefatos zippados
-  pandas_layer_zip_path      = var.pandas_layer_zip_path
+  pandas_layer_zip_path = var.pandas_layer_zip_path
 
   # Configurações do SageMaker
   training_image_uri          = var.training_image_uri
@@ -125,3 +125,18 @@ resource "aws_scheduler_schedule" "training_weekly" {
   }
 }
 
+module "inference" {
+  source = "./modules/inference"
+
+  project_name        = var.project_name
+  region              = var.aws_region
+  dynamodb_table_name = module.processing.realtime_features_table_name
+  s3_bucket_name      = var.s3_bucket_name
+
+  dependencies_layer_zip_path = var.inference_dependencies_layer_zip_path
+
+  lambda_timeout     = var.lambda_timeout
+  lambda_memory_size = var.lambda_memory_size
+
+  tags = var.tags
+}

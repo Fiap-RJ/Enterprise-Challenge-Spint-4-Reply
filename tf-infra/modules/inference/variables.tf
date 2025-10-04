@@ -1,13 +1,18 @@
-variable "app_name" {
-  description = "Name of the application"
+variable "project_name" {
+  description = "Nome do projeto usado como prefixo nos recursos"
   type        = string
-  default     = "inference-app"
 }
 
 variable "region" {
   description = "AWS region to deploy resources"
   type        = string
   default     = "us-east-1"
+}
+
+variable "dependencies_layer_zip_path" {
+  description = "Caminho para o ZIP do Lambda Layer com dependências"
+  type        = string
+  default     = "../dist/inference_dependencies_layer.zip"
 }
 
 variable "dynamodb_table_name" {
