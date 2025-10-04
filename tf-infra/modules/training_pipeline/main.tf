@@ -14,14 +14,9 @@ locals {
 }
 
 # -----------------------------------------------------------------------------
-# 1. LAMBDA LAYER (PANDAS + SKLEARN)
+# 1. LAMBDA LAYERS (CENTRALIZADAS)
 # -----------------------------------------------------------------------------
-resource "aws_lambda_layer_version" "pandas_sklearn_layer" {
-  filename            = var.pandas_layer_zip_path
-  layer_name          = "${var.project_name}-pandas-sklearn-layer"
-  compatible_runtimes = [local.lambda_runtime]
-  description         = "Layer com pandas e scikit-learn para pipeline ML"
-}
+# As camadas são criadas pelo módulo lambda_layers centralizado
 
 # -----------------------------------------------------------------------------
 # 2. LAMBDA FUNCTIONS
@@ -96,7 +91,7 @@ resource "aws_lambda_function" "data_prep" {
 
   timeout     = var.lambda_timeout
   memory_size = var.lambda_memory_size
-  layers      = [aws_lambda_layer_version.pandas_sklearn_layer.arn]
+  layers      = [var.numpy_layer_arn, var.pandas_layer_arn, var.sklearn_layer_arn]
 
   environment {
     variables = {
@@ -118,7 +113,7 @@ resource "aws_lambda_function" "model_evaluation" {
 
   timeout     = var.lambda_timeout
   memory_size = var.lambda_memory_size
-  layers      = [aws_lambda_layer_version.pandas_sklearn_layer.arn]
+  layers      = [var.numpy_layer_arn, var.pandas_layer_arn, var.sklearn_layer_arn]
 
   environment {
     variables = {

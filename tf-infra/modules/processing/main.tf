@@ -5,15 +5,8 @@
 # EventBridge Scheduler → Lambda Processor → DynamoDB/S3 (Feature Store)
 # =============================================================================
 
-# --- LAMBDA LAYER PARA PANDAS ---
-
-resource "aws_lambda_layer_version" "pandas_layer" {
-  filename            = var.pandas_layer_zip_path
-  layer_name          = "${var.project_name}-pandas-layer"
-  compatible_runtimes = ["python3.12"]
-  description         = "Lambda Layer contendo a biblioteca pandas para processamento de dados"
-
-}
+# --- LAMBDA LAYERS (CENTRALIZADAS) ---
+# As camadas são criadas pelo módulo lambda_layers centralizado
 
 # --- TABELA DYNAMODB PARA FEATURE STORE ---
 
@@ -159,7 +152,7 @@ resource "aws_lambda_function" "processing_lambda" {
   timeout     = var.lambda_timeout
   memory_size = var.lambda_memory_size
 
-  layers = [aws_lambda_layer_version.pandas_layer.arn]
+  layers = [var.numpy_layer_arn, var.pandas_layer_arn]
 
   environment {
     variables = {
@@ -179,8 +172,7 @@ resource "aws_lambda_function" "processing_lambda" {
   })
 
   depends_on = [
-    aws_iam_role_policy.processing_lambda_policy,
-    aws_lambda_layer_version.pandas_layer
+    aws_iam_role_policy.processing_lambda_policy
   ]
 }
 

@@ -8,10 +8,19 @@ variable "s3_bucket_name" {
   type        = string
 }
 
-variable "pandas_layer_zip_path" {
-  description = "Caminho para o ZIP contendo pandas + scikit-learn"
+variable "numpy_layer_arn" {
+  description = "ARN da camada Lambda numpy (criada pelo módulo lambda_layers)"
   type        = string
-  default     = "./lambda_artifacts/pandas_sklearn_layer.zip"
+}
+
+variable "pandas_layer_arn" {
+  description = "ARN da camada Lambda pandas (criada pelo módulo lambda_layers)"
+  type        = string
+}
+
+variable "sklearn_layer_arn" {
+  description = "ARN da camada Lambda scikit-learn (criada pelo módulo lambda_layers)"
+  type        = string
 }
 
 variable "lambda_timeout" {
@@ -35,7 +44,7 @@ variable "training_image_uri" {
 variable "training_hyperparameters" {
   description = "Mapa de hiperparâmetros a serem passados ao Training Job"
   type        = map(string)
-  default     = { "max_depth": "6", "n_estimators": "100", "learning_rate": "0.1" }
+  default     = { "max_depth" : "6", "n_estimators" : "100", "learning_rate" : "0.1" }
 }
 
 variable "sagemaker_training_role_arn" {

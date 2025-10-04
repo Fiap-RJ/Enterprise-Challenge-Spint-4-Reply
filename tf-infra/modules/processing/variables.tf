@@ -47,10 +47,14 @@ variable "time_window_hours" {
   default     = 1
 }
 
-variable "pandas_layer_zip_path" {
-  description = "Caminho para o arquivo ZIP do Lambda Layer do pandas"
+variable "numpy_layer_arn" {
+  description = "ARN da camada Lambda numpy (criada pelo módulo lambda_layers)"
   type        = string
-  default     = "./lambda_artifacts/pandas_layer.zip"
+}
+
+variable "pandas_layer_arn" {
+  description = "ARN da camada Lambda pandas (criada pelo módulo lambda_layers)"
+  type        = string
 }
 
 

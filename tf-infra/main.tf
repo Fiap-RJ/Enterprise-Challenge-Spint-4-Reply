@@ -27,6 +27,65 @@ provider "aws" {
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
+# --- BUCKET S3 PARA ARTEFATOS DAS CAMADAS ---
+resource "aws_s3_bucket" "artifacts" {
+  bucket = "${var.project_name}-artifacts-${data.aws_caller_identity.current.account_id}"
+
+  tags = merge(var.tags, {
+    Name    = "${var.project_name}-artifacts"
+    Purpose = "Lambda Layers Artifacts"
+  })
+}
+
+resource "aws_s3_bucket_versioning" "artifacts" {
+  bucket = aws_s3_bucket.artifacts.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts" {
+  bucket = aws_s3_bucket.artifacts.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+    bucket_key_enabled = true
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "artifacts" {
+  bucket = aws_s3_bucket.artifacts.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# --- UPLOAD DOS ARQUIVOS ZIP DAS CAMADAS ---
+resource "aws_s3_object" "numpy_layer" {
+  bucket = aws_s3_bucket.artifacts.bucket
+  key    = "lambda-layers/numpy_layer.zip"
+  source = "../dist/numpy_layer.zip"
+  etag   = filemd5("../dist/numpy_layer.zip")
+}
+
+resource "aws_s3_object" "pandas_layer" {
+  bucket = aws_s3_bucket.artifacts.bucket
+  key    = "lambda-layers/pandas_layer.zip"
+  source = "../dist/pandas_layer.zip"
+  etag   = filemd5("../dist/pandas_layer.zip")
+}
+
+resource "aws_s3_object" "sklearn_layer" {
+  bucket = aws_s3_bucket.artifacts.bucket
+  key    = "lambda-layers/sklearn_layer.zip"
+  source = "../dist/sklearn_layer.zip"
+  etag   = filemd5("../dist/sklearn_layer.zip")
+}
+
 module "ingestion" {
   source = "./modules/ingestion"
 
@@ -47,6 +106,20 @@ module "ingestion" {
   tags = var.tags
 }
 
+# --- MÓDULO LAMBDA_LAYERS CENTRALIZADO ---
+module "lambda_layers" {
+  source = "./modules/lambda_layers"
+
+  project_name        = var.project_name
+  artifacts_s3_bucket = aws_s3_bucket.artifacts.bucket
+
+  numpy_layer_s3_key   = aws_s3_object.numpy_layer.key
+  pandas_layer_s3_key  = aws_s3_object.pandas_layer.key
+  sklearn_layer_s3_key = aws_s3_object.sklearn_layer.key
+
+  tags = var.tags
+}
+
 module "processing" {
   source = "./modules/processing"
 
@@ -60,7 +133,9 @@ module "processing" {
   lambda_timeout     = var.lambda_timeout
   lambda_memory_size = var.lambda_memory_size
 
-  pandas_layer_zip_path = var.pandas_layer_zip_path
+  # Camadas centralizadas
+  numpy_layer_arn  = module.lambda_layers.numpy_layer_arn
+  pandas_layer_arn = module.lambda_layers.pandas_layer_arn
 
   tags = var.tags
 }
@@ -71,8 +146,10 @@ module "training_pipeline" {
   project_name   = var.project_name
   s3_bucket_name = var.s3_bucket_name
 
-  # Caminhos dos artefatos zippados
-  pandas_layer_zip_path = var.pandas_layer_zip_path
+  # Camadas centralizadas
+  numpy_layer_arn   = module.lambda_layers.numpy_layer_arn
+  pandas_layer_arn  = module.lambda_layers.pandas_layer_arn
+  sklearn_layer_arn = module.lambda_layers.sklearn_layer_arn
 
   # Configurações do SageMaker
   training_image_uri          = var.training_image_uri

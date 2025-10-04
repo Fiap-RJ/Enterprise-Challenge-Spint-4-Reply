@@ -84,11 +84,7 @@ variable "time_window_hours" {
   default     = 1
 }
 
-variable "pandas_layer_zip_path" {
-  description = "Caminho para o arquivo ZIP do Lambda Layer do pandas + scikit-learn"
-  type        = string
-  default     = "../dist/pandas_sklearn_layer.zip"
-}
+# Removido: pandas_layer_zip_path - agora gerenciado pelo módulo lambda_layers
 
 variable "inference_dependencies_layer_zip_path" {
   description = "Caminho para o arquivo ZIP do Lambda Layer de dependências da inferência"
@@ -96,17 +92,7 @@ variable "inference_dependencies_layer_zip_path" {
   default     = "../dist/inference_dependencies_layer.zip"
 }
 
-variable "data_prep_lambda_zip_path" {
-  description = "Caminho para o ZIP da data_prep_lambda"
-  type        = string
-  default     = "../lambda_artifacts/data_prep_lambda.zip"
-}
-
-variable "model_eval_lambda_zip_path" {
-  description = "Caminho para o ZIP da model_evaluation_lambda"
-  type        = string
-  default     = "../lambda_artifacts/model_evaluation_lambda.zip"
-}
+# Removido: data_prep_lambda_zip_path e model_eval_lambda_zip_path - agora gerenciados pelo módulo training_pipeline
 
 variable "training_image_uri" {
   description = "URI da imagem Docker (algoritmo) usada no SageMaker Training Job"

@@ -1,0 +1,84 @@
+.
+├── README.md
+├── assets
+│   ├── arquitetura_cloud_aws.png
+│   └── logo-fiap.png
+├── config
+├── dist
+│   ├── pandas_layer.zip
+│   ├── pandas_sklearn_layer.zip
+│   ├── processing_lambda.zip
+├── document
+│   └── arch-pro.md
+├── scripts
+│   ├── build_layer.sh
+│   ├── build_pandas_sklearn_layer.sh
+│   ├── diagram.py
+│   └── dist
+│       └── pandas_layer.zip
+├── src
+│   ├── inference
+│   │   ├── README.md
+│   │   ├── app.py
+│   │   ├── data_connector.py
+│   │   └── requeriments.txt
+│   ├── ingestion
+│   │   ├── ingestion_processor.py
+│   │   ├── label_ingestion_lambda.py
+│   │   └── sensor_simulator.py
+│   ├── processing
+│   │   ├── README.md
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── lambda_function.cpython-312.pyc
+│   │   ├── data_access.py
+│   │   ├── data_processing.py
+│   │   ├── feature_engineering.py
+│   │   ├── lambda_function.py
+│   │   ├── pipeline.py
+│   │   └── requirements.txt
+│   └── training
+│       ├── data_prep_lambda.py
+│       ├── model_evaluation_lambda.py
+│       └── train.py
+├── tf-infra
+│   ├── README.md
+│   ├── inference
+│   ├── main.tf
+│   ├── modules
+│   │   ├── inference
+│   │   │   ├── lambda_artifacts
+│   │   │   │   └── inference_lambda.zip
+│   │   │   ├── main.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── variables.tf
+│   │   ├── ingestion
+│   │   │   ├── lambda_artifacts
+│   │   │   │   ├── ingestion.zip
+│   │   │   │   ├── label_ingestion.zip
+│   │   │   │   └── simulator.zip
+│   │   │   ├── main.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── variables.tf
+│   │   ├── processing
+│   │   │   ├── README.md
+│   │   │   ├── lambda_artifacts
+│   │   │   │   └── processing_lambda.zip
+│   │   │   ├── main.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── variables.tf
+│   │   └── training_pipeline
+│   │       ├── lambda_artifacts
+│   │       │   ├── data_prep_lambda.zip
+│   │       │   └── model_eval_lambda.zip
+│   │       ├── main.tf
+│   │       ├── outputs.tf
+│   │       └── variables.tf
+│   ├── outputs.tf
+│   ├── terraform.tfstate
+│   ├── terraform.tfstate.backup
+│   ├── terraform.tfvars
+│   ├── tf-plan
+│   ├── validate.sh
+│   └── variables.tf
+└── tree.txt

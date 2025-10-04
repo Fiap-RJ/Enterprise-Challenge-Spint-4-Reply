@@ -22,10 +22,7 @@ output "realtime_features_table_arn" {
   value       = aws_dynamodb_table.realtime_features.arn
 }
 
-output "pandas_layer_arn" {
-  description = "ARN do Lambda Layer do pandas"
-  value       = aws_lambda_layer_version.pandas_layer.arn
-}
+# Removido: pandas_layer_arn agora é passado como variável
 
 output "processing_lambda_role_arn" {
   description = "ARN da IAM role da Lambda de processamento"
