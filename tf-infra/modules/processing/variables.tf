@@ -26,7 +26,7 @@ variable "realtime_features_table_name" {
 variable "lambda_timeout" {
   description = "Timeout da função Lambda em segundos"
   type        = number
-  default     = 300
+  default     = 900
 }
 
 variable "lambda_memory_size" {
